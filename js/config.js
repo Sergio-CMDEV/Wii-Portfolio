@@ -80,7 +80,7 @@ var def_channels = [
         title: 'Soporte Mii',
         assets: 'assets/channels/',
         channelart: 'channelart/',
-        target: '/soportemii/index.html',
+        target: 'https://p.sergiocm.cv/soporte-mii/',
         previewart: true
     }
 ]
