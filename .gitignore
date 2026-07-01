@@ -1,0 +1,7 @@
+*.psd
+
+# Config local del editor / Claude Code
+.claude/
+
+# Artefactos del servidor de desarrollo
+serve.log

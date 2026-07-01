@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Soporte Mii</title>
+    <link rel="stylesheet" href="../../css/base.css" />
+    <style>
+        html, body {
+            overflow: hidden;
+            padding: 0;
+            margin: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .bg-video {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 0;
+        }
+        .scene {
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+            overflow: hidden;
+        }
+        /* Floating icons */
+        .float {
+            position: absolute;
+            bottom: -15%;
+            opacity: 0;
+            will-change: transform, opacity;
+            animation-name: rise;
+            animation-timing-function: linear;
+            animation-iteration-count: 1;
+            pointer-events: none;
+        }
+        @keyframes rise {
+            0%   { transform: translateY(0) translateX(0); opacity: 0; }
+            12%  { opacity: 0.9; }
+            88%  { opacity: 0.9; }
+            100% { transform: translateY(-120vh) translateX(var(--drift, 0px)); opacity: 0; }
+        }
+        .logo {
+            z-index: 5;
+            position: absolute;
+            inset: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            pointer-events: none;
+            opacity: 0;
+            animation: logoFade 12s linear infinite;
+        }
+        /* Cyclic appear/disappear used on the menu tile */
+        @keyframes logoFade {
+            0%   { opacity: 0; }
+            20%  { opacity: 0; }
+            35%  { opacity: 1; }
+            80%  { opacity: 1; }
+            100% { opacity: 0; }
+        }
+        /* Inside the "game" (Start screen) the logo stays always visible */
+        .logo.static {
+            opacity: 1;
+            animation: none;
+        }
+        .logo img {
+            height: 80vh;
+            max-width: 92vw;
+            object-fit: contain;
+            filter: drop-shadow(0 0.4vh 1.2vh rgba(0, 0, 0, 0.45));
+        }
+    </style>
+</head>
+<body>
+    <video class="bg-video" src="../../assets/channels/soportemii/video.mp4"
+           autoplay muted loop playsinline></video>
+    <div class="scene" id="scene"></div>
+    <div class="logo"><img src="logo.png" alt="Soporte Mii" /></div>
+
+    <script>
+        // When loaded inside the Start screen (channel.html?ingame=1),
+        // keep the logo always on instead of the cyclic fade.
+        if (new URLSearchParams(window.location.search).has('ingame')) {
+            document.querySelector('.logo').classList.add('static');
+        }
+
+        var scene = document.getElementById('scene');
+        var icons = ['burbuja.png', 'wifi.png'];
+
+        function rand(min, max) { return Math.random() * (max - min) + min; }
+
+        function spawn() {
+            var el = document.createElement('img');
+            el.className = 'float';
+            el.src = icons[Math.floor(Math.random() * icons.length)];
+
+            // Random size, horizontal position, drift, and slow duration.
+            var size = rand(4, 10);                 // vh
+            var duration = rand(14, 26);            // seconds (very slow)
+            var drift = rand(-6, 6);                // vw of horizontal sway
+
+            el.style.height = size + 'vh';
+            el.style.left = rand(0, 95) + 'vw';
+            el.style.setProperty('--drift', drift + 'vw');
+            el.style.animationDuration = duration + 's';
+
+            scene.appendChild(el);
+            // Clean up once it has floated off-screen.
+            setTimeout(function () { el.remove(); }, duration * 1000 + 200);
+        }
+
+        // Pre-seed a few so the scene isn't empty at the start.
+        for (var i = 0; i < 6; i++) {
+            setTimeout(spawn, i * 1500);
+        }
+        // Then keep spawning at random intervals.
+        setInterval(spawn, 1800);
+    </script>
+</body>
+</html>
