@@ -26,7 +26,11 @@ localStorage.setItem("sergiocm-portfolio-settings", JSON.stringify(userConfig));
 console.log(`user config:`, userConfig);
 
 // Default channels
+// Only channels made by me are active. The original Wii default channels are
+// kept commented out so they can be re-enabled later; the non-Wii placeholder
+// channels (about, projects, github, contact) were removed.
 var def_channels = [
+    /* --- Canales por defecto de la Wii (desactivados) ---
     {
         id: 'disc',
         title: 'Disc Channel',
@@ -41,40 +45,15 @@ var def_channels = [
         channelart: 'channelart/'
     },
     {
-        id: 'about',
-        title: 'about me',
-        assets: 'assets/channels/',
-        channelart: 'channelart/',
-        target: '/about/index.html'
-    },
-    {
-        id: 'projects',
-        title: 'Projects',
-        assets: 'assets/channels/',
-        channelart: 'channelart/',
-        target: '/projects/index.html'
-    },
-    {
-        id: 'github',
-        title: 'GitHub',
-        assets: 'assets/channels/',
-        channelart: 'channelart/',
-        target: 'https://github.com/Sergio-CMDEV'
-    },
-    {
         id: 'shop',
         title: 'Wii Shop Channel',
         assets: 'assets/channels/',
         channelart: 'channelart/',
         target: '/shop/index.html'
     },
-    {
-        id: 'contact',
-        title: 'Contact',
-        assets: 'assets/channels/',
-        channelart: 'channelart/',
-        target: '/contact/index.html'
-    },
+    --- fin canales por defecto --- */
+
+    // --- Mis canales ---
     {
         id: 'soportemii',
         title: 'Soporte Mii',
@@ -91,13 +70,14 @@ if (!localStorage.getItem('sergiocm-portfolio-channels')) {
 }
 var userChannels = JSON.parse(localStorage.getItem('sergiocm-portfolio-channels'));
 
-// Keep the stored channel list in sync with def_channels.
-// localStorage caches the channels, so changes to def_channels (new channels
-// or edits to existing ones, like the preview type) wouldn't take effect until
-// the user reset them. This adds missing channels and refreshes the properties
-// of existing default channels, while leaving any user-added channels intact.
+// Keep the stored channel list exactly in sync with def_channels.
+// localStorage caches the channels, so changes to def_channels wouldn't take
+// effect until reset. This adds missing channels, refreshes existing ones, and
+// removes any stored channel that's no longer in def_channels (e.g. commented
+// out or deleted) so those stop showing up.
 (function syncDefaultChannels() {
     var changed = false;
+    // Add or update channels defined in def_channels.
     for (const channel of def_channels) {
         var existing = userChannels.findIndex((element) => element.id === channel.id);
         if (existing === -1) {
@@ -105,6 +85,13 @@ var userChannels = JSON.parse(localStorage.getItem('sergiocm-portfolio-channels'
             changed = true;
         } else if (JSON.stringify(userChannels[existing]) !== JSON.stringify(channel)) {
             userChannels[existing] = channel;
+            changed = true;
+        }
+    }
+    // Remove stored channels that are no longer defined in def_channels.
+    for (var i = userChannels.length - 1; i >= 0; i--) {
+        if (!def_channels.find((element) => element.id === userChannels[i].id)) {
+            userChannels.splice(i, 1);
             changed = true;
         }
     }
