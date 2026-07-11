@@ -37,6 +37,9 @@ while ($listener.IsListening) {
             $bytes = [System.IO.File]::ReadAllBytes($full)
             $ext = [System.IO.Path]::GetExtension($full).ToLower()
             if ($mime.ContainsKey($ext)) { $ctx.Response.ContentType = $mime[$ext] }
+            # Never cache, so file changes always show up on reload.
+            $ctx.Response.Headers.Add("Cache-Control", "no-store, no-cache, must-revalidate")
+            $ctx.Response.Headers.Add("Pragma", "no-cache")
             $ctx.Response.ContentLength64 = $bytes.Length
             $ctx.Response.OutputStream.Write($bytes, 0, $bytes.Length)
         } catch {
