@@ -2,16 +2,6 @@
 
 Portfolio personal de **Sergio CM** con la temática del menú de la Wii.
 
-## Ejecutar en local
-El sitio usa `localStorage` compartido entre páginas y rutas relativas al raíz,
-así que hay que servirlo por HTTP (abrirlo como `file://` rompe el almacenamiento y las rutas).
-
-```powershell
-powershell -ExecutionPolicy Bypass -File serve.ps1
-```
-
-Luego abre **http://localhost:8000/**
-
 ## Créditos / base del proyecto
 Este portfolio está construido partiendo de **"Onliine"**, un simulador del menú de la Wii
 creado por JerosGamer89 (Ascript89 en GitHub). Puedes ver los créditos completos dentro del
