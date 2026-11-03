@@ -87,6 +87,19 @@ body {
     cursor: url('../assets/cursor.png'), auto;
 }
 
+/*
+    Keep the Wii pointer over everything.
+
+    Setting it on <body> alone wasn't enough: text fields show an I-beam,
+    disabled controls show the "no" symbol and draggable areas show a grab
+    hand, so the native Windows cursor kept reappearing. The channel art is
+    handled separately in base.css, since each tile is its own iframe document
+    and the parent page's cursor stops at the iframe border.
+*/
+*, *::before, *::after {
+    cursor: url('../assets/cursor.png'), auto;
+}
+
 .main-menu {
     background-image: url('../assets/bg-pattern.png');
     height: 100vh;

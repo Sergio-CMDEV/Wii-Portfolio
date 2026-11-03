@@ -54,6 +54,16 @@ body {
     font-family: 'Regular';
 }
 
+/*
+    The channel art runs inside an iframe, which is its own document: the Wii
+    pointer set on the parent page stops at the iframe border and Windows
+    takes over. Setting it here too keeps it unbroken across the tiles and the
+    Start screen preview.
+*/
+*, *::before, *::after {
+    cursor: url('../assets/cursor.png'), auto;
+}
+
 strong {
     font-family: 'Bold';
 }
