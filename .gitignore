@@ -5,3 +5,6 @@
 
 # Artefactos del servidor de desarrollo
 serve.log
+
+# Credenciales del panel de admin (nunca subir)
+admin/auth.json
