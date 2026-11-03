@@ -35,7 +35,8 @@
         {
             "id": "poketon",
             "overrides": {
-                "description": "Web y app de escritorio para consultar Pokémon y montar equipos"
+                "description": "Web y app de escritorio para consultar Pokémon y montar equipos",
+                "color": "#50c1f2"
             },
             "enabled": true,
             "order": 1,
@@ -78,7 +79,9 @@
         },
         {
             "id": "wii-portfolio",
-            "overrides": {},
+            "overrides": {
+                "color": "#fafafa"
+            },
             "enabled": true,
             "order": 3,
             "useOwnArt": false,
