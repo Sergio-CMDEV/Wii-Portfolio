@@ -478,6 +478,27 @@
             }));
         }
 
+        /*
+            A near-black that keeps the accent's hue.
+
+            The dark styles used to have their backgrounds hardcoded, so
+            changing a project's colour did almost nothing to them -- only a
+            trace or a caret would shift. Deriving the backdrop from the
+            accent makes the colour actually drive the whole scene, while
+            staying dark enough for white text.
+        */
+        function ink(rgb, lightness) {
+            var hsl = rgbToHsl(rgb);
+            return css(hslToRgb([hsl[0], Math.min(hsl[1], 0.45), lightness]));
+        }
+
+        /* A different hue from the same colour, for a second accent. */
+        function shiftHue(rgb, turns) {
+            var hsl = rgbToHsl(rgb);
+            return css(hslToRgb([(hsl[0] + turns) % 1,
+                Math.max(hsl[1], 0.55), Math.min(Math.max(hsl[2], 0.55), 0.7)]));
+        }
+
         var rgb = toRgb(color);
         var viv = vivid(rgb);
 
@@ -808,8 +829,8 @@
                 return `
                     <defs>
                       <linearGradient id="tg" x1="0" y1="0" x2="1" y2="1">
-                        <stop offset="0" stop-color="#1b2030"/>
-                        <stop offset="1" stop-color="#0c0f17"/>
+                        <stop offset="0" stop-color="${ink(rgb, 0.14)}"/>
+                        <stop offset="1" stop-color="${ink(rgb, 0.055)}"/>
                       </linearGradient>
                     </defs>
                     <rect width="160" height="90" fill="url(#tg)"/>
@@ -987,7 +1008,7 @@
                     </defs>
                     <rect width="160" height="90" fill="url(#vbg)"/>
                     <g class="spin-fast" style="transform-origin:42px 45px">
-                      <circle cx="42" cy="45" r="33" fill="#23262d"/>
+                      <circle cx="42" cy="45" r="33" fill="${ink(rgb, 0.15)}"/>
                       <g fill="none" stroke="#fff" opacity="0.12">
                         ${times(6, function (i) {
                             return `<circle cx="42" cy="45" r="${13 + i * 3.4}" stroke-width="0.6"/>`;
@@ -1193,7 +1214,7 @@
                     <defs>
                       <radialGradient id="stf" cx="0.5" cy="0.4" r="0.8">
                         <stop offset="0" stop-color="${scale(viv, 0.45)}"/>
-                        <stop offset="1" stop-color="#070a12"/>
+                        <stop offset="1" stop-color="${ink(rgb, 0.05)}"/>
                       </radialGradient>
                     </defs>
                     <rect width="160" height="90" fill="url(#stf)"/>
@@ -1206,7 +1227,7 @@
                       })}
                     </g>
                     <circle cx="128" cy="22" r="2.2" fill="${A}" class="pulse"/>
-                    <path d="M-10,88 Q80,66 170,88 L170,95 L-10,95 Z" fill="#05070d"/>
+                    <path d="M-10,88 Q80,66 170,88 L170,95 L-10,95 Z" fill="${ink(rgb, 0.035)}"/>
                 `;
             },
 
@@ -1220,8 +1241,8 @@
                 return `
                     <defs>
                       <linearGradient id="abg" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0" stop-color="#0a1024"/>
-                        <stop offset="1" stop-color="#05070f"/>
+                        <stop offset="0" stop-color="${ink(rgb, 0.1)}"/>
+                        <stop offset="1" stop-color="${ink(rgb, 0.04)}"/>
                       </linearGradient>
                     </defs>
                     <rect width="160" height="90" fill="url(#abg)"/>
@@ -1232,9 +1253,9 @@
                       })}
                     </g>
                     ${band(14, 10, 0.3, 17, A)}
-                    ${band(26, 14, 0.22, 13, '#7ef0c0')}
+                    ${band(26, 14, 0.22, 13, shiftHue(rgb, 0.42))}
                     ${band(38, 9, 0.16, 21, A)}
-                    <path d="M-10,84 Q80,70 170,84 L170,95 L-10,95 Z" fill="#04060c"/>
+                    <path d="M-10,84 Q80,70 170,84 L170,95 L-10,95 Z" fill="${ink(rgb, 0.03)}"/>
                 `;
             },
 
@@ -1248,7 +1269,7 @@
                       </pattern>
                       <linearGradient id="bpb" x1="0" y1="0" x2="1" y2="1">
                         <stop offset="0" stop-color="${scale(viv, 0.42)}"/>
-                        <stop offset="1" stop-color="#0b1b33"/>
+                        <stop offset="1" stop-color="${ink(rgb, 0.12)}"/>
                       </linearGradient>
                     </defs>
                     <rect width="160" height="90" fill="url(#bpb)"/>
@@ -1279,8 +1300,8 @@
                 return `
                     <defs>
                       <linearGradient id="cbg" x1="0" y1="0" x2="1" y2="1">
-                        <stop offset="0" stop-color="#101a26"/>
-                        <stop offset="1" stop-color="#070b12"/>
+                        <stop offset="0" stop-color="${ink(rgb, 0.11)}"/>
+                        <stop offset="1" stop-color="${ink(rgb, 0.045)}"/>
                       </linearGradient>
                     </defs>
                     <rect width="160" height="90" fill="url(#cbg)"/>
@@ -1323,8 +1344,8 @@
                         </feMerge>
                       </filter>
                       <linearGradient id="nbg" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0" stop-color="#15101f"/>
-                        <stop offset="1" stop-color="#07060c"/>
+                        <stop offset="0" stop-color="${ink(rgb, 0.1)}"/>
+                        <stop offset="1" stop-color="${ink(rgb, 0.035)}"/>
                       </linearGradient>
                     </defs>
                     <rect width="160" height="90" fill="url(#nbg)"/>
@@ -1353,7 +1374,7 @@
                       </radialGradient>
                       <linearGradient id="dbase" x1="0" y1="0" x2="0.4" y2="1">
                         <stop offset="0" stop-color="${scale(rgb, 0.3)}"/>
-                        <stop offset="0.7" stop-color="#0d1016"/>
+                        <stop offset="0.7" stop-color="${ink(rgb, 0.06)}"/>
                       </linearGradient>
                     </defs>
                     <rect width="160" height="90" fill="url(#dbase)"/>
