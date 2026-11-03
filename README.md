@@ -2,6 +2,23 @@
 
 Portfolio personal de **Sergio CM** con la temática del menú de la Wii.
 
+## Canales = proyectos de GitHub
+
+Los canales del menú se generan a partir de los repositorios de GitHub. La
+lista vive en `db/projects.json` y se gestiona desde el panel de admin, que se
+ejecuta en local:
+
+```bash
+node admin/server.js
+```
+
+Luego abre <http://localhost:8000/admin/> para sincronizar con GitHub, editar
+los canales o desactivarlos, y <http://localhost:8000/> para ver el portfolio.
+Los detalles están en [admin/README.md](admin/README.md).
+
+El sitio sigue siendo estático: el panel sólo escribe `db/projects.json`, que
+es lo que hay que commitear para que los cambios salgan en producción.
+
 ## Créditos / base del proyecto
 Este portfolio está construido partiendo de **"Onliine"**, un simulador del menú de la Wii
 creado por JerosGamer89 (Ascript89 en GitHub). Puedes ver los créditos completos dentro del
