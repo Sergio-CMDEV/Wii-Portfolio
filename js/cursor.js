@@ -39,12 +39,14 @@
         return (match ? match[1] : '') + 'assets/cursor.png';
     })();
 
+    var HIDE_RULE = '.js-cursor, .js-cursor * { cursor: none !important; }';
+
     function build() {
         var style = document.createElement('style');
         // Only applied once this script runs, so the CSS cursor remains the
         // fallback if it doesn't.
         style.textContent =
-            '.js-cursor, .js-cursor * { cursor: none !important; }' +
+            HIDE_RULE +
             '#wii-pointer {' +
             '  position: fixed; top: 0; left: 0; z-index: 2147483647;' +
             '  width: 65px; height: 91px; pointer-events: none;' +
@@ -59,7 +61,27 @@
         pointer.id = 'wii-pointer';
         document.body.appendChild(pointer);
 
-        root.classList.add('js-cursor');
+        hideNativeCursor(document);
+    }
+
+    /*
+        Hide the real cursor in a document.
+
+        The class alone isn't enough inside an iframe: the rule that acts on it
+        lives in the parent's stylesheet, and stylesheets don't cross into a
+        nested document. Without its own copy the art kept showing the CSS
+        cursor from base.css underneath the drawn one, so the pointer appeared
+        twice.
+    */
+    function hideNativeCursor(doc) {
+        try {
+            doc.documentElement.classList.add('js-cursor');
+            if (doc.getElementById('wii-cursor-hide')) return;
+            var style = doc.createElement('style');
+            style.id = 'wii-cursor-hide';
+            style.textContent = HIDE_RULE;
+            (doc.head || doc.documentElement).appendChild(style);
+        } catch (err) { /* document went away */ }
     }
 
     function moveTo(x, y) {
@@ -73,27 +95,49 @@
         if (pointer) pointer.classList.remove('on');
     }
 
-    // Listen on a document, mapping its coordinates into the top page.
+    /*
+        Listen on a document, mapping its coordinates into the top page.
+
+        An iframe's position is cached rather than measured on every move:
+        getBoundingClientRect forces a layout, and doing that for each
+        mousemove while crossing a tile was enough to make the pointer trail
+        behind the real one. The cache is dropped whenever the page scrolls or
+        resizes, and on the animations that shift the grid.
+    */
     function track(doc, frameEl) {
         if (!doc || frames.indexOf(doc) !== -1) return;
         frames.push(doc);
 
+        var box = null;
+        var invalidate = function () { box = null; };
+
+        if (frameEl) {
+            window.addEventListener('scroll', invalidate, { passive: true, capture: true });
+            window.addEventListener('resize', invalidate, { passive: true });
+            document.addEventListener('transitionend', invalidate, true);
+            document.addEventListener('animationend', invalidate, true);
+        }
+
         doc.addEventListener('mousemove', function (ev) {
-            if (frameEl) {
-                var box = frameEl.getBoundingClientRect();
-                // The art iframes are scaled by the tile's CSS, so the inner
-                // coordinates have to be scaled the same way, not just offset.
-                var sx = box.width / (frameEl.offsetWidth || box.width);
-                var sy = box.height / (frameEl.offsetHeight || box.height);
-                moveTo(box.left + ev.clientX * sx, box.top + ev.clientY * sy);
-            } else {
+            if (!frameEl) {
                 moveTo(ev.clientX, ev.clientY);
+                return;
             }
+            if (!box) {
+                var r = frameEl.getBoundingClientRect();
+                // The art iframes are scaled by the tile's CSS, so the inner
+                // coordinates have to be scaled too, not just offset.
+                box = {
+                    left: r.left,
+                    top: r.top,
+                    sx: r.width / (frameEl.offsetWidth || r.width || 1),
+                    sy: r.height / (frameEl.offsetHeight || r.height || 1)
+                };
+            }
+            moveTo(box.left + ev.clientX * box.sx, box.top + ev.clientY * box.sy);
         }, { passive: true });
 
-        try {
-            doc.documentElement.classList.add('js-cursor');
-        } catch (err) { /* document went away */ }
+        hideNativeCursor(doc);
     }
 
     // Pick up iframes as they appear and once they've loaded.
