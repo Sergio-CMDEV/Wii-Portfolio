@@ -591,15 +591,24 @@ function reindex() {
         .forEach((p, i) => { p.order = i; });
 }
 
+/*
+    Move a project one place up or down.
+
+    The two projects swap positions AND their order numbers have to be
+    rewritten from the new positions. Re-running reindex() here would sort by
+    the old order values first and undo the swap, which is what made the
+    arrows appear to do nothing.
+*/
 function move(id, delta) {
-    reindex();
-    const list = state.projects;
+    const list = state.projects.slice().sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
     const from = list.findIndex((p) => p.id === id);
     const to = from + delta;
     if (from === -1 || to < 0 || to >= list.length) return;
 
     [list[from], list[to]] = [list[to], list[from]];
-    reindex();
+    list.forEach((p, i) => { p.order = i; });
+    state.projects = list;
+
     render();
     markDirty();
 }
@@ -629,7 +638,20 @@ async function save() {
 
         const active = P.resolveAll(state.projects)
             .filter((p) => p.enabled && !p.missing).length;
-        toast(`Guardado en db/projects.json · ${active} canales en el portfolio.`, 'ok');
+
+        // The server drops values it can't accept. Saying "saved" while a
+        // field quietly reverted is what made edits look like they vanished,
+        // so name what was refused instead.
+        const rejected = data.rejected || [];
+        if (rejected.length) {
+            toast(`Guardado, pero ${rejected.length} valor${rejected.length === 1 ? '' : 'es'} `
+                + `no se guardó${rejected.length === 1 ? '' : 'n'}.`, 'warn', 9000);
+            for (const r of rejected.slice(0, 4)) {
+                toast(`"${r.id}" · ${r.key}: ${r.reason}`, 'err', 11000);
+            }
+        } else {
+            toast(`Guardado en db/projects.json · ${active} canales en el portfolio.`, 'ok');
+        }
     } catch (err) {
         toast(`No se pudo guardar: ${err.message}`, 'err', 7000);
     } finally {

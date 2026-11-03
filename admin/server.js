@@ -269,7 +269,7 @@ function cleanString(value, max) {
     dropped, strings are bounded, and a target has to be a URL the portfolio
     can actually navigate to.
 */
-function sanitizeState(incoming, current) {
+function sanitizeState(incoming, current, rejected = []) {
     const settings = incoming.settings || {};
     const out = {
         githubUser: cleanString(incoming.githubUser, 80) || current.githubUser,
@@ -300,28 +300,52 @@ function sanitizeState(incoming, current) {
         const rawOverrides = raw.overrides && typeof raw.overrides === 'object'
             ? raw.overrides : {};
 
+        /*
+            Rebuild the overrides, dropping anything that doesn't validate.
+
+            A rejected value used to vanish while the panel still reported a
+            successful save, which looked exactly like "the change didn't
+            stick". Every drop is now recorded and sent back so the panel can
+            say what it refused and why.
+        */
         for (const key of OVERRIDE_KEYS) {
             let value = cleanString(rawOverrides[key], key === 'description' ? 400 : 200);
             if (!value) continue;
 
-            if (key === 'color') {
-                if (!HEX.test(value)) continue;
+            const drop = (reason) => {
+                rejected.push({ id, key, value: value.slice(0, 80), reason });
+            };
+
+            if (key === 'color' && !HEX.test(value)) {
+                drop('no es un color hexadecimal (#rgb o #rrggbb)');
+                continue;
             }
-            if (key === 'style') {
-                // Must be one of the looks the art template actually knows.
-                if (!Projects.STYLE_IDS.includes(value)) continue;
+            if (key === 'style' && !Projects.STYLE_IDS.includes(value)) {
+                // Usually means the server is running older code than the
+                // panel: js/projects.js is loaded once, at startup.
+                drop('estilo desconocido para el servidor; reinícialo');
+                continue;
             }
             if (key === 'target') {
                 // Only absolute http(s) URLs, or a site-relative path.
-                const ok = /^https?:\/\//i.test(value) || /^[\w./-]+$/.test(value);
-                if (!ok) continue;
-                if (/^https?:\/\//i.test(value)) {
-                    try { new URL(value); } catch { continue; }
+                const absolute = /^https?:\/\//i.test(value);
+                if (!absolute && !/^[\w./-]+$/.test(value)) {
+                    drop('debe ser una URL http(s) o una ruta del propio sitio');
+                    continue;
+                }
+                if (absolute) {
+                    try { new URL(value); } catch {
+                        drop('la URL no es válida');
+                        continue;
+                    }
                 }
             }
             if (key === 'audio') {
                 // Must stay inside the site; no protocol, no parent escapes.
-                if (!/^[\w./-]+$/.test(value) || value.includes('..')) continue;
+                if (!/^[\w./-]+$/.test(value) || value.includes('..')) {
+                    drop('debe ser una ruta dentro del sitio');
+                    continue;
+                }
             }
             if (key === 'icon') {
                 value = Array.from(value).slice(0, 4).join('');
@@ -496,9 +520,13 @@ async function handleApi(req, res, url) {
     if (route === '/api/state' && req.method === 'PUT') {
         const current = await readState();
         const incoming = await readBody(req);
-        const next = sanitizeState(incoming, current);
+        const rejected = [];
+        const next = sanitizeState(incoming, current, rejected);
         await writeState(next);
-        return sendJson(res, 200, withResolved(next));
+        if (rejected.length) {
+            console.warn('valores rechazados al guardar:', rejected);
+        }
+        return sendJson(res, 200, { ...withResolved(next), rejected });
     }
 
     if (route === '/api/sync' && req.method === 'POST') {
