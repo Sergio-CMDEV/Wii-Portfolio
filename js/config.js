@@ -25,10 +25,15 @@ userConfig.sfxVol = isNaN(parseFloat(userConfig.sfxVol)) ? 0.2 : parseFloat(user
 localStorage.setItem("sergiocm-portfolio-settings", JSON.stringify(userConfig));
 console.log(`user config:`, userConfig);
 
-// Default channels
-// Only channels made by me are active. The original Wii default channels are
-// kept commented out so they can be re-enabled later; the non-Wii placeholder
-// channels (about, projects, github, contact) were removed.
+// ---------------------------------------------------------------- channels --
+// Channels now come from 'db/projects.json', which the admin panel writes
+// (see admin/README.md). The portfolio is still a static site: it just fetches
+// that file and turns every enabled project into a Wii channel.
+//
+// 'def_channels' below is only a fallback, used when projects.json can't be
+// read at all -- for instance when index.html is opened straight off the disk
+// with file://, where fetch is blocked.
+
 var def_channels = [
     /* --- Canales por defecto de la Wii (desactivados) ---
     {
@@ -53,7 +58,7 @@ var def_channels = [
     },
     --- fin canales por defecto --- */
 
-    // --- Mis canales ---
+    // --- Reserva: canal con arte propio ---
     {
         id: 'soportemii',
         title: 'Soporte Mii',
@@ -64,42 +69,54 @@ var def_channels = [
     }
 ]
 
-// Set channels if they aren't set
-if (!localStorage.getItem('sergiocm-portfolio-channels')) {
-    localStorage.setItem("sergiocm-portfolio-channels", JSON.stringify(def_channels));
-}
-var userChannels = JSON.parse(localStorage.getItem('sergiocm-portfolio-channels'));
-
-// Keep the stored channel list exactly in sync with def_channels.
-// localStorage caches the channels, so changes to def_channels wouldn't take
-// effect until reset. This adds missing channels, refreshes existing ones, and
-// removes any stored channel that's no longer in def_channels (e.g. commented
-// out or deleted) so those stop showing up.
-(function syncDefaultChannels() {
-    var changed = false;
-    // Add or update channels defined in def_channels.
-    for (const channel of def_channels) {
-        var existing = userChannels.findIndex((element) => element.id === channel.id);
-        if (existing === -1) {
-            userChannels.push(channel);
-            changed = true;
-        } else if (JSON.stringify(userChannels[existing]) !== JSON.stringify(channel)) {
-            userChannels[existing] = channel;
-            changed = true;
-        }
-    }
-    // Remove stored channels that are no longer defined in def_channels.
-    for (var i = userChannels.length - 1; i >= 0; i--) {
-        if (!def_channels.find((element) => element.id === userChannels[i].id)) {
-            userChannels.splice(i, 1);
-            changed = true;
-        }
-    }
-    if (changed) {
-        localStorage.setItem("sergiocm-portfolio-channels", JSON.stringify(userChannels));
-        console.log(`default channels synced:`, userChannels);
-    }
+// Site root, derived from this script's own URL ('<root>/js/config.js'), so the
+// fetch below works from index.html and from pages in subfolders alike.
+var siteRoot = (function () {
+    var src = (document.currentScript && document.currentScript.src) || '';
+    var match = src.match(/^(.*\/)js\/config\.js(?:\?.*)?$/);
+    return match ? match[1] : '';
 })();
+
+// Channels rendered by index.html. Filled in by loadChannels().
+var userChannels = [];
+
+// index.html waits on this before placing the channels in the grid.
+var channelsReady = loadChannels();
+
+async function loadChannels() {
+    // Pages that don't show the grid (settings, credits) don't load projects.js.
+    if (typeof PortfolioProjects === 'undefined') {
+        userChannels = [];
+        return userChannels;
+    }
+
+    try {
+        var res = await fetch(siteRoot + 'db/projects.json', { cache: 'no-store' });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        var data = await res.json();
+
+        userChannels = PortfolioProjects.resolveAll(data.projects)
+            // "Desactivado" in the panel, and repos that vanished from GitHub,
+            // both just stop being channels.
+            .filter(function (p) { return p.enabled && !p.missing; })
+            .sort(function (a, b) { return a.order - b.order; })
+            .map(PortfolioProjects.toChannel);
+
+        console.log('canales desde db/projects.json:', userChannels);
+    } catch (err) {
+        console.warn('No se pudo leer db/projects.json (' + err.message
+            + '); usando los canales de reserva de config.js.');
+        userChannels = def_channels.slice();
+    }
+
+    return userChannels;
+}
+
+// The channel list used to be cached in localStorage; projects.json replaced
+// that, so drop the stale key to avoid confusion when debugging.
+try {
+    localStorage.removeItem('sergiocm-portfolio-channels');
+} catch (err) { /* storage disabled; nothing to clean up */ }
 
 // Reset config
 function resetConfig(confirm) {
@@ -112,13 +129,10 @@ function resetConfig(confirm) {
     }
 }
 
-// Reset channels
-function resetChannels(confirm) {
-    if (confirm == true) {
-        localStorage.setItem("sergiocm-portfolio-channels", JSON.stringify(def_channels));
-        userChannels = JSON.parse(localStorage.getItem('sergiocm-portfolio-channels'));
-        console.log(`channels reset (recarga la página):`, userChannels);
-    } else {
-        console.error(`resetChannels: llama con resetChannels(true) para confirmar.`)
-    }
+// Reload the channels from db/projects.json without a full page refresh.
+// (Channels are no longer stored in localStorage, so there's nothing to reset.)
+async function reloadChannels() {
+    await loadChannels();
+    console.log(`canales recargados (recarga la página para verlos):`, userChannels);
+    return userChannels;
 }

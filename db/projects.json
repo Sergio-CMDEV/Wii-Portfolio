@@ -1,0 +1,290 @@
+{
+    "githubUser": "Sergio-CMDEV",
+    "syncedAt": "2026-11-03T08:40:37.334Z",
+    "settings": {
+        "includeForks": false,
+        "includeArchived": true,
+        "excludeProfileRepo": true,
+        "excluded": []
+    },
+    "projects": [
+        {
+            "id": "poketon",
+            "overrides": {
+                "description": "Web y app de escritorio para consultar Pokémon y montar equipos"
+            },
+            "enabled": true,
+            "order": 0,
+            "useOwnArt": false,
+            "repo": "poketon",
+            "github": {
+                "name": "poketon",
+                "description": "",
+                "language": "JavaScript",
+                "stars": 0,
+                "url": "https://github.com/Sergio-CMDEV/poketon",
+                "homepage": "",
+                "topics": [],
+                "archived": false,
+                "fork": false,
+                "pushedAt": "2026-10-16T12:24:01Z",
+                "createdAt": "2026-10-08T11:35:35Z"
+            }
+        },
+        {
+            "id": "webpage-cv",
+            "overrides": {},
+            "enabled": true,
+            "order": 1,
+            "useOwnArt": false,
+            "repo": "webpage-cv",
+            "github": {
+                "name": "webpage-cv",
+                "description": "",
+                "language": "HTML",
+                "stars": 0,
+                "url": "https://github.com/Sergio-CMDEV/webpage-cv",
+                "homepage": "",
+                "topics": [],
+                "archived": false,
+                "fork": false,
+                "pushedAt": "2026-09-18T11:08:30Z",
+                "createdAt": "2026-07-24T13:41:33Z"
+            }
+        },
+        {
+            "id": "wii-portfolio",
+            "overrides": {},
+            "enabled": true,
+            "order": 2,
+            "useOwnArt": false,
+            "repo": "Wii-Portfolio",
+            "github": {
+                "name": "Wii-Portfolio",
+                "description": "Portfolio propio con tematica de menu de Wii",
+                "language": "HTML",
+                "stars": 0,
+                "url": "https://github.com/Sergio-CMDEV/Wii-Portfolio",
+                "homepage": "",
+                "topics": [],
+                "archived": false,
+                "fork": false,
+                "pushedAt": "2026-09-14T07:39:36Z",
+                "createdAt": "2026-07-01T19:53:35Z"
+            }
+        },
+        {
+            "id": "webpage-eldermilion",
+            "overrides": {},
+            "enabled": false,
+            "order": 3,
+            "useOwnArt": false,
+            "repo": "webpage-Eldermilion",
+            "github": {
+                "name": "webpage-Eldermilion",
+                "description": "Webpage informative for his things ",
+                "language": "JavaScript",
+                "stars": 0,
+                "url": "https://github.com/Sergio-CMDEV/webpage-Eldermilion",
+                "homepage": "",
+                "topics": [],
+                "archived": false,
+                "fork": false,
+                "pushedAt": "2026-08-02T14:17:17Z",
+                "createdAt": "2026-08-02T13:49:36Z"
+            }
+        },
+        {
+            "id": "app-tienda-springboot",
+            "overrides": {},
+            "enabled": true,
+            "order": 4,
+            "useOwnArt": false,
+            "repo": "App-tienda-springboot",
+            "github": {
+                "name": "App-tienda-springboot",
+                "description": "",
+                "language": "Java",
+                "stars": 0,
+                "url": "https://github.com/Sergio-CMDEV/App-tienda-springboot",
+                "homepage": "",
+                "topics": [],
+                "archived": false,
+                "fork": false,
+                "pushedAt": "2026-07-02T16:57:10Z",
+                "createdAt": "2026-07-02T16:55:06Z"
+            }
+        },
+        {
+            "id": "soportemii",
+            "overrides": {
+                "title": "Soporte Mii",
+                "target": "https://p.sergiocm.cv/soporte-mii/"
+            },
+            "enabled": true,
+            "order": 5,
+            "useOwnArt": true,
+            "repo": "soportemii",
+            "github": {
+                "name": "soportemii",
+                "description": "Web informativa soporte mii",
+                "language": "HTML",
+                "stars": 0,
+                "url": "https://github.com/Sergio-CMDEV/soportemii",
+                "homepage": "",
+                "topics": [],
+                "archived": false,
+                "fork": false,
+                "pushedAt": "2026-07-02T16:46:23Z",
+                "createdAt": "2026-07-01T19:55:14Z"
+            }
+        },
+        {
+            "id": "virreyflix",
+            "overrides": {},
+            "enabled": true,
+            "order": 6,
+            "useOwnArt": false,
+            "repo": "VirreyFlix",
+            "github": {
+                "name": "VirreyFlix",
+                "description": "",
+                "language": "Java",
+                "stars": 0,
+                "url": "https://github.com/Sergio-CMDEV/VirreyFlix",
+                "homepage": "",
+                "topics": [],
+                "archived": false,
+                "fork": false,
+                "pushedAt": "2026-07-02T10:40:21Z",
+                "createdAt": "2026-04-24T15:19:44Z"
+            }
+        },
+        {
+            "id": "aplicacion-tienda-springboot",
+            "overrides": {},
+            "enabled": true,
+            "order": 7,
+            "useOwnArt": false,
+            "repo": "Aplicacion-Tienda-SpringBoot",
+            "github": {
+                "name": "Aplicacion-Tienda-SpringBoot",
+                "description": "",
+                "language": "Java",
+                "stars": 0,
+                "url": "https://github.com/Sergio-CMDEV/Aplicacion-Tienda-SpringBoot",
+                "homepage": "",
+                "topics": [],
+                "archived": false,
+                "fork": false,
+                "pushedAt": "2026-05-28T12:12:29Z",
+                "createdAt": "2026-05-28T09:25:51Z"
+            }
+        },
+        {
+            "id": "gestordeclientes",
+            "overrides": {},
+            "enabled": false,
+            "order": 8,
+            "useOwnArt": false,
+            "repo": "GestorDeClientes",
+            "github": {
+                "name": "GestorDeClientes",
+                "description": "Prueba de creación de un gestor de clientes con GRUB, conexcion a MYSQL escrito en java",
+                "language": "Java",
+                "stars": 0,
+                "url": "https://github.com/Sergio-CMDEV/GestorDeClientes",
+                "homepage": "",
+                "topics": [],
+                "archived": false,
+                "fork": false,
+                "pushedAt": "2026-03-30T12:07:03Z",
+                "createdAt": "2026-03-30T10:18:41Z"
+            }
+        },
+        {
+            "id": "curriculum-vitae",
+            "overrides": {},
+            "enabled": true,
+            "order": 9,
+            "useOwnArt": false,
+            "repo": "curriculum-vitae",
+            "github": {
+                "name": "curriculum-vitae",
+                "description": "My first curriculum vitae in webpage",
+                "language": "HTML",
+                "stars": 0,
+                "url": "https://github.com/Sergio-CMDEV/curriculum-vitae",
+                "homepage": "",
+                "topics": [],
+                "archived": false,
+                "fork": false,
+                "pushedAt": "2026-01-26T10:47:37Z",
+                "createdAt": "2026-01-26T10:39:56Z"
+            }
+        },
+        {
+            "id": "examen-poo-evaluacion-sergiocm",
+            "overrides": {},
+            "enabled": false,
+            "order": 10,
+            "useOwnArt": false,
+            "repo": "Examen_POO_Evaluacion_SergioCM",
+            "github": {
+                "name": "Examen_POO_Evaluacion_SergioCM",
+                "description": "",
+                "language": "Java",
+                "stars": 0,
+                "url": "https://github.com/Sergio-CMDEV/Examen_POO_Evaluacion_SergioCM",
+                "homepage": "",
+                "topics": [],
+                "archived": false,
+                "fork": false,
+                "pushedAt": "2025-11-03T12:47:48Z",
+                "createdAt": "2025-11-03T10:52:45Z"
+            }
+        },
+        {
+            "id": "employee-system",
+            "overrides": {},
+            "enabled": true,
+            "order": 11,
+            "useOwnArt": false,
+            "repo": "Employee-system",
+            "github": {
+                "name": "Employee-system",
+                "description": "Gestion de empleados, practica de kotlin de desarrollo de interfaces final",
+                "language": "Kotlin",
+                "stars": 0,
+                "url": "https://github.com/Sergio-CMDEV/Employee-system",
+                "homepage": "",
+                "topics": [],
+                "archived": false,
+                "fork": false,
+                "pushedAt": "2025-12-04T12:27:10Z",
+                "createdAt": "2025-12-04T10:23:30Z"
+            }
+        },
+        {
+            "id": "dam-gitflow-practica-scm",
+            "overrides": {},
+            "enabled": true,
+            "order": 12,
+            "useOwnArt": false,
+            "repo": "dam-gitflow-practica-scm",
+            "github": {
+                "name": "dam-gitflow-practica-scm",
+                "description": "",
+                "language": "",
+                "stars": 0,
+                "url": "https://github.com/Sergio-CMDEV/dam-gitflow-practica-scm",
+                "homepage": "",
+                "topics": [],
+                "archived": false,
+                "fork": false,
+                "pushedAt": "2025-10-09T10:22:52Z",
+                "createdAt": "2025-10-09T09:09:22Z"
+            }
+        }
+    ]
+}
