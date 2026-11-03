@@ -63,21 +63,26 @@ propio repositorio.
 ### Estilos
 
 El menú real de la Wii es casi todo canales blancos con el nombre en color y
-algún patrón, y sólo unos pocos oscuros. Por eso hay siete estilos:
+alguna ilustración, y sólo unos pocos oscuros. Hay **33 estilos**, cada uno
+con su escena dibujada en SVG.
 
-| Estilo | Aspecto |
-|---|---|
-| Blanco | Fondo blanco con el nombre en color y una línea debajo |
-| Rayas diagonales | Rayas en diagonal y el nombre en un recuadro |
-| Cuadrícula de puntos | Retícula de puntos sobre blanco |
-| Líneas horizontales | Líneas finas con un brillo que las recorre |
-| Degradado suave | Halo de color que respira |
-| Banda de color | Franja de color a lo ancho con el nombre encima |
-| Oscuro | Degradado oscuro con símbolos de código flotando |
+**Claros:** Blanco limpio · Horizonte curvo · Rayas diagonales · Cuadrícula de
+puntos · Olas · Rejilla en perspectiva · Órbitas · Tarjetas · Rayos · Mosaico ·
+Banda de color · Banderola · Montañas · Nubes · Panal · Triángulos · Radar ·
+Vinilo · Ventana de app · Confeti · Cuaderno · Galones · Pétalos · Capas
+isométricas · Globos
+
+**Oscuros:** Burbujas · Oscuro · Terminal · Estrellas · Aurora · Plano técnico ·
+Circuito · Neón
 
 El estilo se asigna solo a partir del nombre del repo, repartiéndolos para que
 la rejilla no quede monótona, y siempre sale el mismo para el mismo proyecto.
 Si uno no te convence, cámbialo en su desplegable.
+
+> Al añadir o cambiar estilos en `js/projects.js` hay que **reiniciar el
+> servidor**: Node carga ese módulo una sola vez, al arrancar. Si no, al
+> guardar un estilo nuevo el servidor no lo reconoce y lo rechaza (te avisa
+> con un mensaje en vez de descartarlo en silencio).
 
 Los colores de lenguaje de GitHub son apagados para algunos lenguajes (el
 marrón de Java, el malva de Kotlin), así que para los patrones y las bandas se

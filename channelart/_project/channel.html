@@ -211,6 +211,32 @@
 
         @keyframes driftX { to { transform: translateX(-20px); } }
 
+        .spin-fast { animation: spin 14s linear infinite; transform-origin: center; }
+
+        /* Radar sweep and anything else that turns around a set point. */
+        .sweep-rot { animation: spin 5s linear infinite; }
+
+        .twinkle { animation: twinkle 3.4s ease-in-out infinite; }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.25; }
+            50%      { opacity: 1; }
+        }
+
+        .sway { animation: sway 8s ease-in-out infinite; transform-origin: top center; }
+
+        @keyframes sway {
+            0%, 100% { transform: rotate(-2.5deg); }
+            50%      { transform: rotate(2.5deg); }
+        }
+
+        .flow { animation: flow 16s ease-in-out infinite; }
+
+        @keyframes flow {
+            0%, 100% { transform: translateX(-6px) scaleY(1); }
+            50%      { transform: translateX(6px) scaleY(1.12); }
+        }
+
         /* A soft light sweeping across the scene. */
         .sheen {
             position: absolute;
@@ -292,6 +318,37 @@
         /* ---------------------------------------------------- style: arc --- */
 
         .style-arc .plate { justify-content: flex-start; padding-top: 11vh; }
+
+        /* ------------------------------------ wordmark out of the art's way */
+
+        /* Scene fills the upper half, so the wordmark sits under it. */
+        .style-window .plate,
+        .style-stack .plate {
+            justify-content: flex-end;
+            padding-bottom: 6vh;
+        }
+
+        /* Peaks occupy the lower half. */
+        .style-mountains .plate {
+            justify-content: flex-start;
+            padding-top: 10vh;
+        }
+
+        /* The record sits on the left, so the wordmark takes the right side. */
+        .style-vinyl .plate {
+            align-items: flex-end;
+            padding-right: 5vw;
+            padding-left: 42vw;
+        }
+
+        .style-vinyl .title { font-size: 11vh; text-align: right; }
+        .style-vinyl .title.len-m { font-size: 9vh; }
+        .style-vinyl .title.len-l { font-size: 7.4vh; }
+        .style-vinyl .title.len-xl { font-size: 6vh; }
+        .style-vinyl .meta { justify-content: flex-end; }
+
+        /* Keep clear of the ruled margin on the left. */
+        .style-notebook .plate { padding-left: 14vw; }
     </style>
 </head>
 <body>
@@ -319,9 +376,14 @@
         var color = params.get('color') || '#37bef4';
 
         // Keep this list in step with STYLES in js/projects.js.
-        var STYLES = ['light', 'arc', 'stripes', 'dots', 'waves', 'grid', 'orbit',
-            'cards', 'bubbles', 'sunburst', 'blocks', 'band', 'ribbon',
-            'terminal', 'dark'];
+        var STYLES = [
+            'light', 'arc', 'stripes', 'dots', 'waves', 'grid', 'orbit', 'cards',
+            'sunburst', 'blocks', 'band', 'ribbon', 'mountains', 'clouds',
+            'hexes', 'triangles', 'radar', 'vinyl', 'window', 'confetti',
+            'notebook', 'chevrons', 'petals', 'stack', 'balloons',
+            'bubbles', 'dark', 'terminal', 'starfield', 'aurora', 'blueprint',
+            'circuit', 'neon'
+        ];
 
         var style = params.get('style') || 'light';
         if (STYLES.indexOf(style) === -1) style = 'light';
@@ -758,6 +820,517 @@
                 `;
             },
 
+            // Layered peaks with a sun behind them.
+            mountains: function () {
+                var range = function (base, h, op, seed) {
+                    var pts = '';
+                    for (var i = 0; i <= 8; i++) {
+                        var x = i * 20;
+                        var peak = base - (((i * seed) % 5) + 1) / 5 * h;
+                        pts += (i ? ' L' : 'M') + x + ',' + peak.toFixed(1);
+                    }
+                    return `<path d="${pts} L160,95 L0,95 Z" fill="${A}" opacity="${op}"/>`;
+                };
+                return `
+                    <defs>
+                      <linearGradient id="msky" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0" stop-color="#ffffff"/>
+                        <stop offset="1" stop-color="${A_SOFT}"/>
+                      </linearGradient>
+                    </defs>
+                    <rect width="160" height="90" fill="url(#msky)"/>
+                    <circle cx="118" cy="26" r="11" fill="${A}" opacity="0.3" class="bob"/>
+                    ${range(74, 26, 0.2, 7)}
+                    ${range(80, 20, 0.34, 3)}
+                    ${range(86, 14, 0.6, 5)}
+                `;
+            },
+
+            // Puffy clouds drifting across a soft sky.
+            clouds: function () {
+                var cloud = function (x, y, s, op, dur) {
+                    return `<g opacity="${op}" transform="translate(${x} ${y}) scale(${s})">
+                        <animateTransform attributeName="transform" type="translate"
+                          additive="sum" from="-30 0" to="190 0" dur="${dur}s"
+                          repeatCount="indefinite"/>
+                        <ellipse cx="0" cy="0" rx="13" ry="7" fill="#fff"/>
+                        <ellipse cx="-9" cy="2" rx="9" ry="5.5" fill="#fff"/>
+                        <ellipse cx="9" cy="2.5" rx="10" ry="5" fill="#fff"/>
+                      </g>`;
+                };
+                return `
+                    <defs>
+                      <linearGradient id="csky" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0" stop-color="${A}"/>
+                        <stop offset="1" stop-color="${A_SOFT}"/>
+                      </linearGradient>
+                    </defs>
+                    <rect width="160" height="90" fill="url(#csky)"/>
+                    ${cloud(0, 18, 1, 0.9, 46)}
+                    ${cloud(0, 42, 0.7, 0.6, 62)}
+                    ${cloud(0, 68, 1.25, 0.85, 38)}
+                `;
+            },
+
+            // Honeycomb.
+            hexes: function () {
+                var hex = function (cx, cy, r) {
+                    var p = '';
+                    for (var i = 0; i < 6; i++) {
+                        var a = (i * 60 - 30) * Math.PI / 180;
+                        p += (i ? ' L' : 'M') + (cx + Math.cos(a) * r).toFixed(1)
+                            + ',' + (cy + Math.sin(a) * r).toFixed(1);
+                    }
+                    return p + ' Z';
+                };
+                var r = 7.2, dx = r * Math.sqrt(3), dy = r * 1.5;
+                return `
+                    <rect width="160" height="90" fill="#fbfdff"/>
+                    <g>
+                      ${times(8, function (row) {
+                          return times(12, function (col) {
+                              var cx = col * dx + (row % 2 ? dx / 2 : 0);
+                              var cy = row * dy;
+                              var op = 0.08 + (((row * 12 + col) * 17) % 10) / 34;
+                              var delay = (((row + col) * 3) % 8);
+                              return `<path d="${hex(cx, cy, r - 0.7)}" fill="${A}"
+                                  opacity="${op.toFixed(2)}"
+                                  style="animation:pulse 7s ease-in-out ${delay}s infinite"/>`;
+                          });
+                      })}
+                    </g>
+                    <defs>
+                      <radialGradient id="hvig">
+                        <stop offset="0.3" stop-color="#fff" stop-opacity="0"/>
+                        <stop offset="1" stop-color="#fff" stop-opacity="0.85"/>
+                      </radialGradient>
+                    </defs>
+                    <rect width="160" height="90" fill="url(#hvig)"/>
+                `;
+            },
+
+            // Low-poly triangle mosaic.
+            triangles: function () {
+                var cols = 10, rows = 5, w = 16, h = 18;
+                return `
+                    <rect width="160" height="90" fill="#fcfdff"/>
+                    <g>
+                      ${times(rows, function (r) {
+                          return times(cols, function (c) {
+                              var x = c * w, y = r * h;
+                              var s1 = ((r * cols + c) * 13) % 10;
+                              var s2 = ((r * cols + c) * 29) % 10;
+                              return `
+                                <path d="M${x},${y} L${x + w},${y} L${x},${y + h} Z"
+                                      fill="${A}" opacity="${(0.06 + s1 / 26).toFixed(2)}"/>
+                                <path d="M${x + w},${y} L${x + w},${y + h} L${x},${y + h} Z"
+                                      fill="${A}" opacity="${(0.06 + s2 / 26).toFixed(2)}"/>`;
+                          });
+                      })}
+                    </g>
+                `;
+            },
+
+            // Sweeping radar with rings and blips.
+            radar: function () {
+                return `
+                    <defs>
+                      <radialGradient id="rad">
+                        <stop offset="0" stop-color="#ffffff"/>
+                        <stop offset="1" stop-color="${A_SOFT}"/>
+                      </radialGradient>
+                      <linearGradient id="beam" x1="0" y1="0" x2="1" y2="0">
+                        <stop offset="0" stop-color="${A}" stop-opacity="0.55"/>
+                        <stop offset="1" stop-color="${A}" stop-opacity="0"/>
+                      </linearGradient>
+                    </defs>
+                    <rect width="160" height="90" fill="url(#rad)"/>
+                    <g fill="none" stroke="${A}" stroke-width="0.45" opacity="0.45">
+                      <circle cx="80" cy="45" r="12"/>
+                      <circle cx="80" cy="45" r="24"/>
+                      <circle cx="80" cy="45" r="36"/>
+                      <circle cx="80" cy="45" r="48"/>
+                      <line x1="22" y1="45" x2="138" y2="45"/>
+                      <line x1="80" y1="-8" x2="80" y2="98"/>
+                    </g>
+                    <g class="sweep-rot" style="transform-origin:80px 45px">
+                      <path d="M80,45 L140,45 A60,60 0 0,0 122,2 Z" fill="url(#beam)"/>
+                    </g>
+                    <circle cx="104" cy="30" r="1.8" fill="${A_DEEP}" class="twinkle"/>
+                    <circle cx="58" cy="60" r="1.4" fill="${A_DEEP}" class="twinkle"
+                            style="animation-delay:1.4s"/>
+                    <circle cx="96" cy="66" r="1.2" fill="${A_DEEP}" class="twinkle"
+                            style="animation-delay:2.6s"/>
+                `;
+            },
+
+            // A record turning on a deck.
+            vinyl: function () {
+                return `
+                    <defs>
+                      <linearGradient id="vbg" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0" stop-color="#ffffff"/>
+                        <stop offset="1" stop-color="${A_SOFT}"/>
+                      </linearGradient>
+                    </defs>
+                    <rect width="160" height="90" fill="url(#vbg)"/>
+                    <g class="spin-fast" style="transform-origin:42px 45px">
+                      <circle cx="42" cy="45" r="33" fill="#23262d"/>
+                      <g fill="none" stroke="#fff" opacity="0.12">
+                        ${times(6, function (i) {
+                            return `<circle cx="42" cy="45" r="${13 + i * 3.4}" stroke-width="0.6"/>`;
+                        })}
+                      </g>
+                      <circle cx="42" cy="45" r="11" fill="${A}"/>
+                      <circle cx="42" cy="45" r="1.8" fill="#fff"/>
+                      <path d="M42,12 a33,33 0 0,1 28,16" stroke="#fff" stroke-width="1"
+                            fill="none" opacity="0.22"/>
+                    </g>
+                    <g opacity="0.75">
+                      <circle cx="126" cy="20" r="2.6" fill="${A}"/>
+                      <path d="M126,20 L112,52" stroke="${A_DEEP}" stroke-width="1.6"
+                            stroke-linecap="round"/>
+                    </g>
+                `;
+            },
+
+            // A light app window, the counterpart to the terminal style.
+            window: function () {
+                return `
+                    <defs>
+                      <linearGradient id="wbg" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0" stop-color="${A_SOFT}"/>
+                        <stop offset="1" stop-color="${A_MID}"/>
+                      </linearGradient>
+                    </defs>
+                    <rect width="160" height="90" fill="url(#wbg)"/>
+                    <g>
+                      <rect x="16" y="5" width="128" height="48" rx="3.5" fill="#fff"
+                            stroke="${A}" stroke-width="0.7"/>
+                      <path d="M16,8.5 a3.5,3.5 0 0 1 3.5,-3.5 h121 a3.5,3.5 0 0 1 3.5,3.5 v5.5 h-128 z"
+                            fill="${A}" opacity="0.22"/>
+                      <circle cx="22" cy="9.8" r="1.5" fill="${A}" opacity="0.8"/>
+                      <circle cx="27.5" cy="9.8" r="1.5" fill="${A}" opacity="0.5"/>
+                      <circle cx="33" cy="9.8" r="1.5" fill="${A}" opacity="0.3"/>
+                      <rect x="40" y="7.6" width="60" height="4.4" rx="2.2" fill="${A}"
+                            opacity="0.16"/>
+                      <rect x="21" y="19" width="30" height="29" rx="2" fill="${A}" opacity="0.14"/>
+                      ${times(4, function (i) {
+                          return `<rect x="56" y="${20 + i * 7}" width="${[76, 60, 70, 44][i]}"
+                              height="3.4" rx="1.7" fill="${A}" opacity="${0.22 - i * 0.03}"/>`;
+                      })}
+                    </g>
+                `;
+            },
+
+            // Confetti scattered over a pale backdrop.
+            confetti: function () {
+                return `
+                    <defs>
+                      <linearGradient id="cfg" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0" stop-color="#ffffff"/>
+                        <stop offset="1" stop-color="${A_SOFT}"/>
+                      </linearGradient>
+                    </defs>
+                    <rect width="160" height="90" fill="url(#cfg)"/>
+                    <g>
+                      ${times(34, function (i) {
+                          var x = ((i * 47) % 158) + 1;
+                          var y = ((i * 29) % 86) + 2;
+                          var rot = (i * 53) % 180;
+                          var w = 2.4 + (i % 3) * 1.2;
+                          var op = 0.25 + ((i * 7) % 10) / 16;
+                          var dur = 5 + (i % 5);
+                          return `<rect x="${x}" y="${y}" width="${w}" height="${w * 1.9}"
+                              rx="0.9" fill="${A}" opacity="${op.toFixed(2)}"
+                              transform="rotate(${rot} ${x} ${y})"
+                              style="animation:bob ${dur}s ease-in-out ${(i % 7)}s infinite"/>`;
+                      })}
+                    </g>
+                `;
+            },
+
+            // Ruled paper with a margin and punch holes.
+            notebook: function () {
+                return `
+                    <rect width="160" height="90" fill="#fffef9"/>
+                    <g stroke="${A}" stroke-width="0.4" opacity="0.3">
+                      ${times(11, function (i) {
+                          return `<line x1="26" y1="${8 + i * 7.4}" x2="156" y2="${8 + i * 7.4}"/>`;
+                      })}
+                    </g>
+                    <line x1="24" y1="0" x2="24" y2="90" stroke="#e9736f" stroke-width="0.7"
+                          opacity="0.65"/>
+                    <line x1="22" y1="0" x2="22" y2="90" stroke="#e9736f" stroke-width="0.5"
+                          opacity="0.35"/>
+                    <g fill="#fff" stroke="${A}" stroke-width="0.5" opacity="0.85">
+                      ${times(3, function (i) {
+                          return `<circle cx="11" cy="${20 + i * 25}" r="3.4"/>`;
+                      })}
+                    </g>
+                    <rect x="0" y="0" width="6" height="90" fill="${A}" opacity="0.14"/>
+                `;
+            },
+
+            // Repeating chevrons sliding across.
+            chevrons: function () {
+                return `
+                    <defs>
+                      <linearGradient id="chg" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0" stop-color="#ffffff"/>
+                        <stop offset="1" stop-color="${A_SOFT}"/>
+                      </linearGradient>
+                      <pattern id="chp" width="18" height="18" patternUnits="userSpaceOnUse">
+                        <path d="M0,4 L9,13 L18,4" stroke="${A}" stroke-width="2.4"
+                              fill="none" stroke-linecap="round"/>
+                      </pattern>
+                    </defs>
+                    <rect width="160" height="90" fill="url(#chg)"/>
+                    <rect width="160" height="108" y="-9" fill="url(#chp)" opacity="0.2">
+                      <animateTransform attributeName="transform" type="translate"
+                        from="0 0" to="0 18" dur="4.5s" repeatCount="indefinite"/>
+                    </rect>
+                `;
+            },
+
+            // Soft overlapping petals turning slowly.
+            petals: function () {
+                return `
+                    <defs>
+                      <radialGradient id="pbg">
+                        <stop offset="0" stop-color="#ffffff"/>
+                        <stop offset="1" stop-color="${A_SOFT}"/>
+                      </radialGradient>
+                    </defs>
+                    <rect width="160" height="90" fill="url(#pbg)"/>
+                    <g class="spin-slow" style="transform-origin:80px 45px" opacity="0.4">
+                      ${times(8, function (i) {
+                          return `<ellipse cx="80" cy="18" rx="9" ry="26" fill="${A}"
+                              opacity="0.45" transform="rotate(${i * 45} 80 45)"/>`;
+                      })}
+                    </g>
+                    <g class="spin-rev" style="transform-origin:80px 45px" opacity="0.3">
+                      ${times(6, function (i) {
+                          return `<ellipse cx="80" cy="30" rx="5" ry="15" fill="${A_DEEP}"
+                              opacity="0.4" transform="rotate(${i * 60 + 30} 80 45)"/>`;
+                      })}
+                    </g>
+                    <circle cx="80" cy="45" r="19" fill="#fff" opacity="0.72"/>
+                `;
+            },
+
+            // Isometric stacked slabs.
+            stack: function () {
+                var slab = function (y, op) {
+                    return `<g opacity="${op}">
+                        <path d="M80,${y} L126,${y + 15} L80,${y + 30} L34,${y + 15} Z"
+                              fill="${A}"/>
+                        <path d="M34,${y + 15} L80,${y + 30} L80,${y + 35} L34,${y + 20} Z"
+                              fill="${A_DEEP}"/>
+                        <path d="M126,${y + 15} L80,${y + 30} L80,${y + 35} L126,${y + 20} Z"
+                              fill="${A_DEEP}" opacity="0.7"/>
+                      </g>`;
+                };
+                return `
+                    <defs>
+                      <linearGradient id="sbg" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0" stop-color="#ffffff"/>
+                        <stop offset="1" stop-color="${A_SOFT}"/>
+                      </linearGradient>
+                    </defs>
+                    <rect width="160" height="90" fill="url(#sbg)"/>
+                    <g class="bob">
+                      ${slab(34, 0.32)}
+                      ${slab(21, 0.52)}
+                      ${slab(8, 0.85)}
+                    </g>
+                `;
+            },
+
+            // Balloons on strings, swaying.
+            balloons: function () {
+                var balloon = function (x, y, r, op, delay) {
+                    return `<g class="sway" style="animation-delay:${delay}s;
+                              transform-origin:${x}px ${y - r}px">
+                        <path d="M${x},${y + r * 2.4} Q${x + 3},${y + r * 1.4} ${x},${y + r}"
+                              stroke="${A_DEEP}" stroke-width="0.4" fill="none" opacity="0.5"/>
+                        <ellipse cx="${x}" cy="${y}" rx="${r}" ry="${r * 1.18}" fill="${A}"
+                                 opacity="${op}"/>
+                        <ellipse cx="${x - r * 0.33}" cy="${y - r * 0.4}" rx="${r * 0.22}"
+                                 ry="${r * 0.3}" fill="#fff" opacity="0.55"/>
+                      </g>`;
+                };
+                return `
+                    <defs>
+                      <linearGradient id="blg" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0" stop-color="${A_SOFT}"/>
+                        <stop offset="1" stop-color="#ffffff"/>
+                      </linearGradient>
+                    </defs>
+                    <rect width="160" height="90" fill="url(#blg)"/>
+                    ${balloon(22, 26, 9, 0.75, 0)}
+                    ${balloon(42, 16, 6, 0.5, 1.6)}
+                    ${balloon(136, 30, 10, 0.7, 0.8)}
+                    ${balloon(118, 18, 6.5, 0.45, 2.4)}
+                `;
+            },
+
+            // Dark sky with twinkling stars.
+            starfield: function () {
+                return `
+                    <defs>
+                      <radialGradient id="stf" cx="0.5" cy="0.4" r="0.8">
+                        <stop offset="0" stop-color="${scale(viv, 0.45)}"/>
+                        <stop offset="1" stop-color="#070a12"/>
+                      </radialGradient>
+                    </defs>
+                    <rect width="160" height="90" fill="url(#stf)"/>
+                    <g fill="#fff">
+                      ${times(60, function (i) {
+                          var x = (i * 37) % 160, y = (i * 53) % 90;
+                          var r = 0.3 + ((i * 11) % 7) / 12;
+                          return `<circle cx="${x}" cy="${y}" r="${r.toFixed(2)}"
+                              class="twinkle" style="animation-delay:${(i % 9) * 0.4}s"/>`;
+                      })}
+                    </g>
+                    <circle cx="128" cy="22" r="2.2" fill="${A}" class="pulse"/>
+                    <path d="M-10,88 Q80,66 170,88 L170,95 L-10,95 Z" fill="#05070d"/>
+                `;
+            },
+
+            // Flowing aurora bands over a night sky.
+            aurora: function () {
+                var band = function (y, h, op, dur, col) {
+                    return `<path d="M-20,${y} q40,-${h} 80,0 t80,0 t80,0 L220,${y + 26}
+                            q-40,${h} -80,0 t-80,0 t-80,0 Z" fill="${col}" opacity="${op}"
+                            style="animation:flow ${dur}s ease-in-out infinite"/>`;
+                };
+                return `
+                    <defs>
+                      <linearGradient id="abg" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0" stop-color="#0a1024"/>
+                        <stop offset="1" stop-color="#05070f"/>
+                      </linearGradient>
+                    </defs>
+                    <rect width="160" height="90" fill="url(#abg)"/>
+                    <g fill="#fff" opacity="0.6">
+                      ${times(24, function (i) {
+                          return `<circle cx="${(i * 61) % 160}" cy="${(i * 29) % 70}"
+                              r="0.4" class="twinkle" style="animation-delay:${(i % 7) * 0.5}s"/>`;
+                      })}
+                    </g>
+                    ${band(14, 10, 0.3, 17, A)}
+                    ${band(26, 14, 0.22, 13, '#7ef0c0')}
+                    ${band(38, 9, 0.16, 21, A)}
+                    <path d="M-10,84 Q80,70 170,84 L170,95 L-10,95 Z" fill="#04060c"/>
+                `;
+            },
+
+            // Technical drawing: white grid and annotations on blueprint blue.
+            blueprint: function () {
+                return `
+                    <defs>
+                      <pattern id="bpg" width="8" height="8" patternUnits="userSpaceOnUse">
+                        <path d="M8,0 L0,0 L0,8" fill="none" stroke="#fff"
+                              stroke-width="0.25" opacity="0.3"/>
+                      </pattern>
+                      <linearGradient id="bpb" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0" stop-color="${scale(viv, 0.42)}"/>
+                        <stop offset="1" stop-color="#0b1b33"/>
+                      </linearGradient>
+                    </defs>
+                    <rect width="160" height="90" fill="url(#bpb)"/>
+                    <rect width="160" height="90" fill="url(#bpg)"/>
+                    <g stroke="#fff" fill="none" opacity="0.45">
+                      <rect x="26" y="20" width="48" height="34" stroke-width="0.6"/>
+                      <circle cx="112" cy="37" r="17" stroke-width="0.6"/>
+                      <circle cx="112" cy="37" r="7" stroke-width="0.4"
+                              stroke-dasharray="2 2"/>
+                      <line x1="26" y1="62" x2="74" y2="62" stroke-width="0.4"/>
+                      <path d="M26,60 L26,64 M74,60 L74,64" stroke-width="0.4"/>
+                      <line x1="95" y1="37" x2="129" y2="37" stroke-width="0.3"
+                            stroke-dasharray="3 2"/>
+                    </g>
+                    <g fill="#fff" opacity="0.3">
+                      <rect x="26" y="66" width="14" height="1.4" rx="0.7"/>
+                      <rect x="95" y="58" width="20" height="1.4" rx="0.7"/>
+                    </g>
+                `;
+            },
+
+            // PCB traces with nodes lighting up.
+            circuit: function () {
+                var trace = function (d, op) {
+                    return `<path d="${d}" stroke="${A}" stroke-width="0.7" fill="none"
+                            opacity="${op}" stroke-linecap="round"/>`;
+                };
+                return `
+                    <defs>
+                      <linearGradient id="cbg" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0" stop-color="#101a26"/>
+                        <stop offset="1" stop-color="#070b12"/>
+                      </linearGradient>
+                    </defs>
+                    <rect width="160" height="90" fill="url(#cbg)"/>
+                    <g>
+                      ${trace('M0,20 L28,20 L38,30 L72,30', 0.5)}
+                      ${trace('M160,16 L120,16 L110,26 L86,26', 0.4)}
+                      ${trace('M0,66 L24,66 L34,56 L70,56', 0.45)}
+                      ${trace('M160,72 L128,72 L118,62 L90,62', 0.35)}
+                      ${trace('M16,4 L16,14 L26,24', 0.3)}
+                      ${trace('M144,86 L144,76 L134,66', 0.3)}
+                      ${trace('M52,90 L52,70 L62,60', 0.25)}
+                      ${trace('M104,0 L104,14 L96,22', 0.25)}
+                    </g>
+                    <g fill="${A}">
+                      ${[[28, 20], [38, 30], [120, 16], [110, 26], [24, 66], [34, 56],
+                         [128, 72], [118, 62], [16, 14], [144, 76], [52, 70], [104, 14]]
+                        .map(function (p, i) {
+                            return `<circle cx="${p[0]}" cy="${p[1]}" r="1.7" class="twinkle"
+                                style="animation-delay:${(i % 6) * 0.6}s"/>`;
+                        }).join('')}
+                    </g>
+                    <g fill="none" stroke="${A}" stroke-width="0.5" opacity="0.25">
+                      <rect x="60" y="22" width="40" height="46" rx="2"/>
+                    </g>
+                `;
+            },
+
+            // Glowing neon outlines on near-black.
+            neon: function () {
+                var glow = function (shape) {
+                    return `<g filter="url(#nglow)">${shape}</g>`;
+                };
+                return `
+                    <defs>
+                      <filter id="nglow" x="-50%" y="-50%" width="200%" height="200%">
+                        <feGaussianBlur stdDeviation="1.6" result="b"/>
+                        <feMerge>
+                          <feMergeNode in="b"/><feMergeNode in="b"/>
+                          <feMergeNode in="SourceGraphic"/>
+                        </feMerge>
+                      </filter>
+                      <linearGradient id="nbg" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0" stop-color="#15101f"/>
+                        <stop offset="1" stop-color="#07060c"/>
+                      </linearGradient>
+                    </defs>
+                    <rect width="160" height="90" fill="url(#nbg)"/>
+                    ${glow(`<circle cx="80" cy="45" r="30" fill="none" stroke="${A}"
+                             stroke-width="1.1" opacity="0.85"/>`)}
+                    ${glow(`<circle cx="80" cy="45" r="38" fill="none" stroke="${A}"
+                             stroke-width="0.5" opacity="0.4" stroke-dasharray="5 7"/>`)}
+                    ${glow(`<path d="M16,78 L46,78" stroke="${A}" stroke-width="1"
+                             stroke-linecap="round" opacity="0.7"/>`)}
+                    ${glow(`<path d="M114,12 L144,12" stroke="${A}" stroke-width="1"
+                             stroke-linecap="round" opacity="0.7"/>`)}
+                    <g class="spin-slow" style="transform-origin:80px 45px">
+                      ${glow(`<circle cx="118" cy="45" r="2.2" fill="${A}"/>`)}
+                    </g>
+                    <circle cx="80" cy="45" r="30" fill="${A}" opacity="0.07"/>
+                `;
+            },
+
             // Dark gradient with code marks drifting up (added in the scene).
             dark: function () {
                 return `
@@ -782,8 +1355,10 @@
         /* ------------------------------------------------------- plate ---- */
 
         // Styles whose backdrop needs a white wordmark, or a boxed one.
-        var INVERTED = ['bubbles', 'terminal', 'dark'];
-        var BOXED = ['stripes', 'blocks', 'grid'];
+        var INVERTED = ['bubbles', 'terminal', 'dark', 'starfield', 'aurora',
+            'blueprint', 'circuit', 'neon'];
+        var BOXED = ['stripes', 'blocks', 'grid', 'hexes', 'triangles', 'confetti',
+            'chevrons', 'notebook', 'clouds'];
 
         var plate = document.getElementById('plate');
         if (INVERTED.indexOf(style) !== -1) plate.classList.add('inverted');
@@ -821,8 +1396,10 @@
 
         document.getElementById('desc').textContent = params.get('desc') || '';
 
-        // The sheen only suits the glossy styles.
-        if (['light', 'arc', 'grid', 'band', 'ribbon', 'dark', 'terminal']
+        // The sheen only suits the glossy styles; on the busy or matte ones
+        // it just washes the scene out.
+        if (['light', 'arc', 'grid', 'band', 'ribbon', 'dark', 'terminal',
+             'mountains', 'stack', 'vinyl', 'window', 'neon']
                 .indexOf(style) === -1) {
             document.getElementById('sheen').remove();
         }

@@ -111,33 +111,67 @@
         across the list instead of being the same for all.
     */
     var STYLES = [
-        { id: 'light',    name: 'Blanco limpio' },
-        { id: 'arc',      name: 'Horizonte curvo' },
-        { id: 'stripes',  name: 'Rayas diagonales' },
-        { id: 'dots',     name: 'Cuadrícula de puntos' },
-        { id: 'waves',    name: 'Olas' },
-        { id: 'grid',     name: 'Rejilla en perspectiva' },
-        { id: 'orbit',    name: 'Órbitas' },
-        { id: 'cards',    name: 'Tarjetas' },
-        { id: 'bubbles',  name: 'Burbujas' },
-        { id: 'sunburst', name: 'Rayos' },
-        { id: 'blocks',   name: 'Mosaico' },
-        { id: 'band',     name: 'Banda de color' },
-        { id: 'ribbon',   name: 'Banderola' },
-        { id: 'terminal', name: 'Terminal' },
-        { id: 'dark',     name: 'Oscuro' }
+        // --- Claros ---
+        { id: 'light',     name: 'Blanco limpio' },
+        { id: 'arc',       name: 'Horizonte curvo' },
+        { id: 'stripes',   name: 'Rayas diagonales' },
+        { id: 'dots',      name: 'Cuadrícula de puntos' },
+        { id: 'waves',     name: 'Olas' },
+        { id: 'grid',      name: 'Rejilla en perspectiva' },
+        { id: 'orbit',     name: 'Órbitas' },
+        { id: 'cards',     name: 'Tarjetas' },
+        { id: 'sunburst',  name: 'Rayos' },
+        { id: 'blocks',    name: 'Mosaico' },
+        { id: 'band',      name: 'Banda de color' },
+        { id: 'ribbon',    name: 'Banderola' },
+        { id: 'mountains', name: 'Montañas' },
+        { id: 'clouds',    name: 'Nubes' },
+        { id: 'hexes',     name: 'Panal' },
+        { id: 'triangles', name: 'Triángulos' },
+        { id: 'radar',     name: 'Radar' },
+        { id: 'vinyl',     name: 'Vinilo' },
+        { id: 'window',    name: 'Ventana de app' },
+        { id: 'confetti',  name: 'Confeti' },
+        { id: 'notebook',  name: 'Cuaderno' },
+        { id: 'chevrons',  name: 'Galones' },
+        { id: 'petals',    name: 'Pétalos' },
+        { id: 'stack',     name: 'Capas isométricas' },
+        { id: 'balloons',  name: 'Globos' },
+
+        // --- Oscuros ---
+        { id: 'bubbles',   name: 'Burbujas' },
+        { id: 'dark',      name: 'Oscuro' },
+        { id: 'terminal',  name: 'Terminal' },
+        { id: 'starfield', name: 'Estrellas' },
+        { id: 'aurora',    name: 'Aurora' },
+        { id: 'blueprint', name: 'Plano técnico' },
+        { id: 'circuit',   name: 'Circuito' },
+        { id: 'neon',      name: 'Neón' }
     ];
 
     var STYLE_IDS = STYLES.map(function (s) { return s.id; });
 
-    // Stable per-project pick: the same project always gets the same style,
-    // but different names spread across the whole set.
+    /*
+        Stable per-project pick: the same project always gets the same style,
+        but different names spread across the whole set.
+
+        FNV-1a with a final avalanche step, rather than the usual hash*31:
+        project names here share long prefixes ("webpage-cv",
+        "webpage-eldermilion") and the weaker hash kept mapping them to the
+        same style, so the grid came out with visible repeats.
+    */
     function autoStyle(project) {
         var key = String(project.id || project.repo || '');
-        var hash = 0;
+        var hash = 2166136261;
         for (var i = 0; i < key.length; i++) {
-            hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
+            hash ^= key.charCodeAt(i);
+            hash = Math.imul(hash, 16777619) >>> 0;
         }
+        hash = (hash ^ (hash >>> 15)) >>> 0;
+        hash = Math.imul(hash, 2246822507) >>> 0;
+        // ">>> 0" again: ^ yields a signed int, and a negative index would
+        // read past the start of the array and hand back undefined.
+        hash = (hash ^ (hash >>> 13)) >>> 0;
         return STYLE_IDS[hash % STYLE_IDS.length];
     }
 
