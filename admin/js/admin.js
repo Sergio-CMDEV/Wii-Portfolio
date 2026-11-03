@@ -380,6 +380,9 @@ function fieldStyle(project) {
                         s.id === resolved.style ? 'selected' : ''}>${escapeHtml(s.name)}</option>`
                 ).join('')}
             </select>
+            <button type="button" class="btn gallery-btn js-gallery">
+                Ver los ${P.STYLES.length} estilos
+            </button>
         </label>`;
 }
 
@@ -456,6 +459,16 @@ function wireCard(card, resolved) {
         colorPicker.addEventListener('input', () => {
             hexInput.value = colorPicker.value;
             setOverride(card, id, 'color', colorPicker.value);
+        });
+    }
+
+    const galleryBtn = card.querySelector('.js-gallery');
+    if (galleryBtn) {
+        galleryBtn.addEventListener('click', (ev) => {
+            // The button sits inside a <label>, which would otherwise hand the
+            // click to the select behind it.
+            ev.preventDefault();
+            openGallery(id);
         });
     }
 
@@ -563,6 +576,92 @@ function refreshHead(card, id) {
     card.querySelector('.js-name').textContent = resolved.title;
     card.querySelector('.sub').textContent = resolved.description || 'Sin descripción';
 }
+
+/* --------------------------------------------------------- style gallery -- */
+
+// Which project the open gallery is picking a style for.
+let galleryFor = null;
+
+/*
+    Show every style rendered with this project's own title, language and
+    colour. Picking from a list of names means guessing what each one looks
+    like; here you see the actual channel before choosing.
+*/
+function openGallery(id) {
+    galleryFor = id;
+    const project = find(id);
+    const resolved = P.resolve(project);
+
+    el('galleryFor').textContent = `para "${resolved.title}"`;
+
+    // Show the modal before filling it: a lazy iframe created inside a
+    // display:none container never comes into view, so the previews stayed
+    // blank until the gallery was reopened.
+    el('gallery').classList.add('on');
+    document.body.style.overflow = 'hidden';
+    el('gallery').scrollTop = 0;
+
+    const grid = el('galleryGrid');
+    grid.replaceChildren();
+
+    for (const style of P.STYLES) {
+        // Resolve the project as if it used this style, so the preview shows
+        // the real title, colour and language rather than placeholder text.
+        const preview = P.resolve({ ...project, overrides: { ...project.overrides, style: style.id } });
+
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'gstyle' + (style.id === resolved.style ? ' current' : '');
+        // Loaded eagerly on purpose: showing the previews is the whole point
+        // of the gallery, and with lazy loading everything below the fold
+        // stayed blank. They are thrown away again when it closes.
+        button.innerHTML = `
+            <span class="frame">
+                <iframe src="${escapeHtml(artUrl(preview))}"
+                        title="${escapeHtml(style.name)}" tabindex="-1"></iframe>
+            </span>
+            <span class="name">
+                <span>${escapeHtml(style.name)}</span>
+                ${style.id === resolved.style ? '<span class="flag">actual</span>' : ''}
+            </span>`;
+
+        button.addEventListener('click', () => {
+            pickStyle(id, style.id);
+        });
+
+        grid.appendChild(button);
+    }
+}
+
+function closeGallery() {
+    el('gallery').classList.remove('on');
+    document.body.style.overflow = '';
+    // Drop the iframes so 30-odd animated previews stop running in the
+    // background once the gallery is shut.
+    el('galleryGrid').replaceChildren();
+    galleryFor = null;
+}
+
+function pickStyle(id, styleId) {
+    const card = document.querySelector(`.card[data-id="${id}"]`);
+    closeGallery();
+    if (!card) return;
+
+    const select = card.querySelector('.js-field[data-key="style"]');
+    if (select) select.value = styleId;
+    setOverride(card, id, 'style', styleId);
+}
+
+el('galleryClose').addEventListener('click', closeGallery);
+
+el('gallery').addEventListener('click', (ev) => {
+    // Clicking the backdrop closes it; clicking the panel doesn't.
+    if (ev.target === el('gallery')) closeGallery();
+});
+
+window.addEventListener('keydown', (ev) => {
+    if (ev.key === 'Escape' && galleryFor) closeGallery();
+});
 
 // Reloading the art iframe on each keystroke flickers, so coalesce.
 const previewTimers = new Map();

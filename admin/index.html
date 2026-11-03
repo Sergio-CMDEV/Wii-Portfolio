@@ -66,6 +66,20 @@
         <button class="btn primary" id="savebarSave">Guardar cambios</button>
     </div>
 
+    <!-- Style gallery: every style rendered with this project's own title
+         and colour, so you pick by looking instead of by name. -->
+    <div class="modal" id="gallery">
+        <div class="modal-box">
+            <div class="modal-head">
+                <h2>Estilo del canal</h2>
+                <span class="sub" id="galleryFor"></span>
+                <div class="spacer"></div>
+                <button class="btn" id="galleryClose">Cerrar</button>
+            </div>
+            <div class="gallery" id="galleryGrid"></div>
+        </div>
+    </div>
+
     <div class="toasts" id="toasts"></div>
 
     <!-- Same resolver the portfolio uses, so the previews here match the real
