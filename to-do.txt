@@ -15,6 +15,8 @@ to-do:
 - everybody votes channel (for user feedback on the channel and bug reporting)
 - news wiiconnect24 channel (changelog of the website)
 - finish the rest of the channels if possible (consider Mii)
+- wii-style error window when a link is unreachable or just fails
+- working message board: send a message from it and have it reach my email
 
 future considerations:
 - dolphin vm in wasm
