@@ -1,5 +1,35 @@
-// Add channel
-// Adds to channel config too.
+// Channel rendering.
+//
+// The channel list itself comes from 'db/projects.json' (see js/config.js and
+// admin/README.md). The helpers below only draw channels into the Wii grid;
+// addChannel/removeChannel stay as in-memory console helpers for quick tests.
+
+// Channels per page in the main menu grid (4 columns x 3 rows).
+var CHANNELS_PER_PAGE = 12;
+
+// Append another page of blank slots to the grid.
+// Lets the menu hold any number of projects instead of the 24 that are in the
+// markup; without it, extra channels would silently never be drawn.
+function addChannelPage() {
+    var grid = document.querySelector('.grid');
+    var page = document.createElement('div');
+    page.className = 'ch-c';
+
+    for (var i = 0; i < CHANNELS_PER_PAGE; i++) {
+        var slot = document.createElement('div');
+        slot.className = 'ch blank';
+        page.appendChild(slot);
+    }
+
+    // Keep the page before the 'next' arrow so the arrow stays on the right.
+    var next = grid.querySelector('.next');
+    if (next) grid.insertBefore(page, next);
+    else grid.appendChild(page);
+
+    return page.firstChild;
+}
+
+// Add channel (in-memory only -- use the admin panel to add a real project).
 // Defaults: addChannel('id', 'Title', 'path-to-assets', 'path-to-channelart')
 // (Everything else is optional)
 function addChannel(id, title, assets, channelart, target, videoformat) {
@@ -51,18 +81,21 @@ function addChannel(id, title, assets, channelart, target, videoformat) {
         if (videoformat) {
             channel.videoformat = videoformat;
         }
-        
-        // Push to userChannels & storage.
+
+        // Push to the live list and draw it right away.
         userChannels.push(channel);
-        localStorage.setItem("sergiocm-portfolio-channels", JSON.stringify(userChannels));
-        console.log(`new channel storage: `, userChannels);
-        return 'Please reload this page to see your new channel!';
+        makeChannel(channel);
+        console.log(`canal añadido (solo en memoria): `, channel);
+        return 'Para que sea permanente, añádelo desde el panel de admin (/admin/).';
     }
 }
 
 function makeChannel(channeljson) {
-    // Get the first blank channel
+    // Get the first blank channel, adding a page when the grid is full.
     var target = document.getElementsByClassName('ch blank')[0];
+    if (!target) {
+        target = addChannelPage();
+    }
 
     // First, we remove the "blank" class name & add "occupied".
     target.classList.remove('blank');
@@ -80,33 +113,52 @@ function makeChannel(channeljson) {
         hasDisc = 'id="discTag"';
 
         target.insertAdjacentHTML(`afterbegin`,
-        
+
         `
         <img src="channelart/disc/disc.png" class="spinnin" />
         `
         )
     }
+
+    // Channel art: an explicit 'art' URL (used by the generated project
+    // channels, which share one template and pass their look as query params),
+    // or the classic per-channel folder.
+    var artUrl = channeljson.art
+        || `${channeljson.channelart}${channeljson.id}/channel.html`;
+
     // Main inject
-    // If channel has the 'custom' var:
-    target.insertAdjacentHTML('afterbegin', 
-    
+    target.insertAdjacentHTML('afterbegin',
+
     `
-    <iframe src="${channeljson.channelart}${channeljson.id}/channel.html"></iframe>
+    <iframe src="${artUrl}" title="${escapeAttr(channeljson.title)}" loading="lazy"></iframe>
     <div class="onhover" onmouseover="playSFX('button-hover.mp3', userConfig.sfxVol)" onclick="zip()"></div>
-    <span class="tag" ${hasDisc}>${channeljson.title}</span>
+    <span class="tag" ${hasDisc}>${escapeHtml(channeljson.title)}</span>
     `
     )
 }
 
-// Remove channel
-// Removes from channel config too.
+// Titles are editable in the admin panel, so escape them before they go into
+// the markup above.
+function escapeHtml(value) {
+    return String(value == null ? '' : value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+}
+
+function escapeAttr(value) {
+    return escapeHtml(value).replace(/"/g, '&quot;');
+}
+
+// Remove channel (from the live grid; the panel is what makes it permanent).
 function removeChannel(id) {
     // Find channel by id.
     var channel = userChannels.findIndex((element) => element.id === id);
 
     // If couldn't find the channel
-    if (!channel) {
+    if (channel === -1) {
         console.error('removeChannel: Couldn\'t find a channel with that id!');
+        return;
     }
 
     // Remove class name 'occupied'
@@ -123,7 +175,6 @@ function removeChannel(id) {
 
     // Splice from userChannels
     userChannels.splice(channel, 1)
-    console.log(`removed channel '${id}': `, userChannels);
-    // Edit local storage
-    localStorage.setItem("sergiocm-portfolio-channels", JSON.stringify(userChannels));
+    console.log(`canal '${id}' quitado de la vista: `, userChannels);
+    console.log(`Para desactivarlo de verdad, usa el panel de admin (/admin/).`);
 }

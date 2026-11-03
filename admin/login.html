@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Entrar &middot; Panel de proyectos</title>
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="css/admin.css" />
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .login {
+            width: 100%;
+            max-width: 370px;
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            box-shadow: 0 6px 26px rgba(0, 0, 0, 0.1);
+            padding: 30px 28px 26px;
+        }
+
+        .login h1 {
+            margin: 0 0 4px;
+            font-family: 'Bold', sans-serif;
+            font-size: 1.22rem;
+            font-weight: normal;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .login h1 .dot {
+            width: 11px;
+            height: 11px;
+            border-radius: 50%;
+            background: var(--blue);
+            box-shadow: 0 0 10px var(--blue-glow);
+        }
+
+        .login .lead {
+            margin: 0 0 22px;
+            font-size: 0.86rem;
+            color: var(--ink-soft);
+        }
+
+        .login label.field {
+            margin-bottom: 15px;
+        }
+
+        .login .btn {
+            width: 100%;
+            margin-top: 6px;
+        }
+
+        .msg {
+            display: none;
+            margin-top: 16px;
+            padding: 11px 14px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            line-height: 1.4;
+            background: #fdecec;
+            border-left: 4px solid var(--danger);
+            color: #8a2b2b;
+        }
+
+        .msg.on { display: block; }
+    </style>
+</head>
+<body>
+    <form class="login" id="form" autocomplete="on">
+        <h1><span class="dot"></span>Panel de proyectos</h1>
+        <p class="lead">Entra para gestionar los canales del portfolio.</p>
+
+        <label class="field">
+            <span class="label-row">Usuario</span>
+            <input type="text" id="user" name="username" autocomplete="username"
+                   autocapitalize="off" autocorrect="off" spellcheck="false" required />
+        </label>
+
+        <label class="field">
+            <span class="label-row">Contraseña</span>
+            <input type="password" id="password" name="password"
+                   autocomplete="current-password" required />
+        </label>
+
+        <button type="submit" class="btn primary" id="submit">Entrar</button>
+
+        <div class="msg" id="msg"></div>
+    </form>
+
+    <script>
+        const form = document.getElementById('form');
+        const msg = document.getElementById('msg');
+        const submit = document.getElementById('submit');
+
+        function showError(text) {
+            msg.textContent = text;
+            msg.classList.add('on');
+        }
+
+        form.addEventListener('submit', async (ev) => {
+            ev.preventDefault();
+            msg.classList.remove('on');
+            submit.disabled = true;
+            submit.textContent = 'Entrando…';
+
+            try {
+                const res = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user: document.getElementById('user').value,
+                        password: document.getElementById('password').value
+                    })
+                });
+                const data = await res.json().catch(() => ({}));
+
+                if (res.ok) {
+                    // Back to wherever we were sent from, defaulting to the panel.
+                    const next = new URLSearchParams(location.search).get('next');
+                    location.href = (next && next.startsWith('/')) ? next : '/admin/';
+                    return;
+                }
+                showError(data.error || 'No se pudo entrar.');
+            } catch (err) {
+                showError('No se pudo contactar con el servidor: ' + err.message);
+            } finally {
+                submit.disabled = false;
+                submit.textContent = 'Entrar';
+            }
+        });
+    </script>
+</body>
+</html>
