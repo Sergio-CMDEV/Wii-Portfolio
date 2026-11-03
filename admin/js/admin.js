@@ -102,7 +102,11 @@ function snapshot() {
 
 function markDirty() {
     const dirty = isDirty();
+    // Both save buttons, not just the one in the top bar: save() disables the
+    // pair while it runs, so leaving the sticky one out here left it dead
+    // after the first save.
     el('saveBtn').disabled = !dirty;
+    el('savebarSave').disabled = !dirty;
     el('savebar').classList.toggle('on', dirty);
 }
 
