@@ -457,6 +457,17 @@
         */
         function vivid(rgb) {
             var hsl = rgbToHsl(rgb);
+
+            /*
+                A grey has no hue to lift. Its hue reads as 0, so forcing
+                saturation on it invented a colour: picking white or grey for
+                a channel came out red. Greys are left grey, only capped dark
+                enough to stay visible on the light styles.
+            */
+            if (hsl[1] < 0.08) {
+                return hslToRgb([hsl[0], hsl[1], Math.min(hsl[2], 0.72)]);
+            }
+
             return hslToRgb([hsl[0], Math.max(hsl[1], 0.72),
                 Math.min(Math.max(hsl[2], 0.42), 0.56)]);
         }
@@ -492,9 +503,13 @@
             return css(hslToRgb([hsl[0], Math.min(hsl[1], 0.45), lightness]));
         }
 
-        /* A different hue from the same colour, for a second accent. */
+        /* A different hue from the same colour, for a second accent.
+           A grey stays grey here too, for the same reason as in vivid(). */
         function shiftHue(rgb, turns) {
             var hsl = rgbToHsl(rgb);
+            if (hsl[1] < 0.08) {
+                return css(hslToRgb([hsl[0], hsl[1], Math.min(hsl[2], 0.75)]));
+            }
             return css(hslToRgb([(hsl[0] + turns) % 1,
                 Math.max(hsl[1], 0.55), Math.min(Math.max(hsl[2], 0.55), 0.7)]));
         }
