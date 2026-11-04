@@ -3,6 +3,17 @@ ErrorDocument 403 /res/403.html
 
 Redirect 403 /.htaccess /res/403.html
 
+# El panel de admin es una herramienta local: se abre con
+# "node admin/server.js", que sirve los ficheros por su cuenta sin pasar por
+# Apache. En el sitio publicado no pinta nada, así que se bloquea entero.
+# Sin esto, /admin/ se servía como ficheros estáticos: el panel se veía,
+# aunque sin servidor detrás no pudiera hacer nada.
+RedirectMatch 403 ^/admin(/|$)
+
+# Las credenciales del panel nunca se suben (están en .gitignore), pero por
+# si alguna vez acaban en el servidor por otra vía.
+RedirectMatch 403 ^/.*/auth\.json$
+
 RewriteCond %{HTTP_USER_AGENT} \
 RewriteCond %{HTTP_USER_AGENT} ^[Ww]eb[Bb]andit [NC,OR]
 RewriteCond %{HTTP_USER_AGENT} ^$ [NC,OR]
